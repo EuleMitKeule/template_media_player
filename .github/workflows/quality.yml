@@ -17,9 +17,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          pip install black
+
       - name: Run black
         run: |
-          poetry run black --check --diff custom_components/template_media_player
+          python -m black --check --diff custom_components/template_media_player
 
   isort:
     runs-on: ubuntu-latest
@@ -32,9 +36,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          pip install isort
+
       - name: Run isort
         run: |
-          poetry run isort --check-only --diff custom_components/template_media_player
+          python -m isort --check-only --diff custom_components/template_media_player
 
   mypy:
     runs-on: ubuntu-latest
@@ -47,9 +55,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          pip install mypy
+
       - name: Run mypy
         run: |
-          poetry run mypy custom_components/template_media_player
+          python -m mypy custom_components/template_media_player
 
   bandit:
     runs-on: ubuntu-latest
@@ -62,9 +74,13 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: |
+          pip install bandit
+
       - name: Run bandit
         run: |
-          poetry run bandit -r custom_components/template_media_player
+          python -m bandit -r custom_components/template_media_player
 
   hassfest:
     runs-on: ubuntu-latest
