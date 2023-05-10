@@ -1,0 +1,76 @@
+
+
+media_player:
+  - platform: template_media_player
+    media_players:
+      fernseher:
+        unique_id:
+        friendly_name:
+        device_class:
+        browse_media_entity_id:
+        global_template:
+        availability_template:
+        icon_template:
+        state_template:
+        attribute_templates:
+          announce:
+          app_id:
+          app_name:
+          enqueue:
+          entity_picture:
+          entity_picture_local:
+          extra:
+          group_members:
+          media_album_artist:
+          media_album_name:
+          media_artist:
+          media_channel:
+          media_content_id:
+          media_content_rating:
+          media_content_type:
+          media_duration:
+          media_episode:
+          media_image_hash:
+          media_image_remotely_accessible:
+          media_image_url:
+          media_library_title:
+          media_playlist:
+          media_position:
+          media_position_updated_at:
+          media_season:
+          media_series_title:
+          media_summary:
+          media_title:
+          media_track:
+          player_source:
+          repeat:
+          seek_position:
+          shuffle:
+          sound_mode:
+          source:
+          username:
+          volume_level:
+          is_volume_muted:
+        service_scripts:
+          media_next_track:
+          media_pause:
+          media_play:
+          media_play_pause:
+          media_previous_track:
+          media_seek: # {{ position }}
+          media_stop:
+          repeat_set: # {{ repeat }}
+          shuffle_set: # {{ shuffle }}
+          toggle:
+          turn_on:
+          turn_off:
+          volume_down:
+          volume_mute: # {{ mute }}
+          volume_set: # {{ volume }}
+          volume_up:
+          clear_playlist:
+          join:
+          play_media:
+          unjoin:
+        sound_mode_scripts:
+        source_scripts:
