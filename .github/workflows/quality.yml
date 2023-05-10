@@ -1,0 +1,96 @@
+name: Code Quality
+
+on:
+  pull_request:
+      types: [opened, synchronize, reopened]
+
+jobs:
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run black
+        run: |
+          poetry run black --check --diff custom_components/template_media_player
+
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run isort
+        run: |
+          poetry run isort --check-only --diff custom_components/template_media_player
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run mypy
+        run: |
+          poetry run mypy custom_components/template_media_player
+
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run bandit
+        run: |
+          poetry run bandit -r custom_components/template_media_player
+
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run hassfest
+        uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run hacs
+        uses: hacs/action@main
+        with:
+          category: integration
