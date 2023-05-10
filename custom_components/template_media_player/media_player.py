@@ -3,10 +3,10 @@
 import logging
 from typing import Any, Optional
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
+from homeassistant.components.media_player import DOMAIN as DOMAIN_MEDIA_PLAYER
 from homeassistant.components.media_player import (
-    DOMAIN as DOMAIN_MEDIA_PLAYER,
     ENTITY_ID_FORMAT,
     PLATFORM_SCHEMA,
     MediaPlayerDeviceClass,
@@ -22,7 +22,6 @@ from homeassistant.components.template.template_entity import TemplateEntity
 from homeassistant.const import ATTR_FRIENDLY_NAME, CONF_ENTITY_PICTURE_TEMPLATE
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import TemplateError
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -125,9 +124,7 @@ async def _async_create_entities(hass: HomeAssistant, config: ConfigType):
         browse_media_entity_id: str | None = media_player_config.get(
             CONF_BROWSE_MEDIA_ENTITY_ID
         )
-        global_template: Template | None = media_player_config.get(
-            CONF_GLOBAL_TEMPLATE
-        )
+        global_template: Template | None = media_player_config.get(CONF_GLOBAL_TEMPLATE)
         availability_template: Template | None = media_player_config.get(
             CONF_AVAILABILITY_TEMPLATE
         )

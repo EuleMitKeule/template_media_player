@@ -32,7 +32,6 @@ CONF_SOURCE_SCRIPTS = "source_scripts"
 
 # Attributes Templates
 
-CONF_ACCESS_TOKEN_TEMPLATE = "access_token"
 CONF_ANNOUNCE_TEMPLATE = "announce"
 CONF_APP_ID_TEMPLATE = "app_id"
 CONF_APP_NAME_TEMPLATE = "app_name"
