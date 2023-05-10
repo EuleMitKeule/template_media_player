@@ -1,9 +1,9 @@
 {
+  "domain": "template_media_player",
+  "name": "Template Media Player",
   "after_dependencies": [
     "template"
   ],
-  "domain": "template_media_player",
-  "name": "Template Media Player",
   "codeowners": [
     "@eulemitkeule"
   ],
