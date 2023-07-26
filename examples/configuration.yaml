@@ -70,7 +70,7 @@ media_player:
           volume_up:
           clear_playlist:
           join:
-          play_media:
+          play_media: # {{ media_id }} {{ media_type }}
           unjoin:
         sound_mode_scripts:
         source_scripts:
