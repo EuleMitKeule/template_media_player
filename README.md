@@ -4,10 +4,11 @@
 # Template Media Player
 
 > Note: This integration is strongly inspired by [media_player.template](https://github.com/Sennevds/media_player.template).<br>
-> Unfortunately that integration is no longer maintained, so I decided to create a new and improved one.
+> Unfortunately that integration is no longer maintained and missing some features, so I decided to create a new and improved one.
 
-Template Media Player allows you to create media player entities in Home Assistant using templates and scripts.<br>
-You can define any attribute you want and create custom behaviour for all services supported by the `media_player` domain. 
+With Template Media Player you can create media player entities in Home Assistant using templates and scripts.<br>
+You can define any attribute you want and create custom behaviour for all services supported by the `media_player` domain.<br>
+This allows you to combine your existing media players into a single entity for improved usability and control or to create completely new media players from scratch.
 
 ## Installation
 
