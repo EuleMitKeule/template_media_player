@@ -482,13 +482,13 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
         )
 
     async def async_select_sound_mode(self, sound_mode):
-        if not sound_mode in self.sound_mode_list:
+        if sound_mode not in self.sound_mode_list:
             return
 
         await self._sound_mode_scripts[sound_mode].async_run(context=self._context)
 
     async def async_select_source(self, source):
-        if not source in self.source_list:
+        if source not in self.source_list:
             return
 
         await self._source_scripts[source].async_run(context=self._context)

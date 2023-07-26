@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "template-media-player"
+version = "0.0.0"
+description = ""
+authors = ["Lennard Beers <l.beers@outlook.de>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "custom_components/template_media_player"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+homeassistant = "^2023.7.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+flake8 = "^6.0.0"
+flake8-pyproject = "^1.2.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.flake8]
+max-line-length = 88
