@@ -7,6 +7,7 @@ media_player:
         unique_id:
         friendly_name:
         device_class:
+        base_media_player_entity_id:
         browse_media_entity_id:
         global_template:
         availability_template:

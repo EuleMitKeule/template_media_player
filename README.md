@@ -162,6 +162,10 @@ media_player:
                 source: Bass Boost
 ```
 
+### Base Media Player
+
+You can specify an entity using the `base_media_player_entity_id` option to inherit all supported behaviour and attributes from, when the behaviour or attribute is not implemented by the template media player.
+
 ### Browse Media
 
 You can specify an entity to use for the browse media functionality using the `browse_media_entity_id` option.<br>

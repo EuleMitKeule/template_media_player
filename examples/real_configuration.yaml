@@ -7,6 +7,7 @@ media_player:
         unique_id: fernseher
         friendly_name: Fernseher
         device_class: tv
+        base_media_player_entity_id: media_player.fernseher_shield
         browse_media_entity_id: media_player.fernseher_plex
         global_template: >
           {% set spotify = "media_player.lennard_spotify" %}
@@ -380,7 +381,7 @@ media_player:
           {% set lg = "media_player.soundbar_lg" %}
           {% set is_spotify = state_attr(spotify, "source") in ["Soundbar", "Überall", "Wohnzimmer", "Untergeschoss"] %}
           {% set is_chromecast = states(chromecast) in ["playing", "paused", "buffering"] %}
-          {% set player = 
+          {% set player =
             spotify if is_spotify
             else chromecast if is_chromecast
             else lg %}
@@ -610,5 +611,5 @@ media_player:
               turn_on_entity: media_player.soundbar_lg
               source_entity: media_player.soundbar_lg
               source: Wi-Fi
-        
+
 
