@@ -17,7 +17,9 @@ CONF_MEDIA_PLAYERS = "media_players"
 CONF_UNIQUE_ID = "unique_id"
 CONF_FRIENDLY_NAME = "friendly_name"
 CONF_DEVICE_CLASS = "device_class"
+CONF_BASE_MEDIA_PLAYER_ENTITY_ID = "base_media_player_entity_id"
 CONF_BROWSE_MEDIA_ENTITY_ID = "browse_media_entity_id"
+
 # General Templates
 
 CONF_GLOBAL_TEMPLATE = "global_template"
