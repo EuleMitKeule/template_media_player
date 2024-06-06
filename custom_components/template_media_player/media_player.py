@@ -416,7 +416,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
 
     @property
     def sound_mode_list(self) -> list | list[str] | None:
-        if self._sound_mode_scripts is None:
+        if self._sound_mode_scripts is not None:
             return list(self._sound_mode_scripts.keys())
 
         if self.base_media_player_entity is not None:
