@@ -16,7 +16,14 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
-from homeassistant.components.media_player.browse_media import BrowseMedia
+from homeassistant.components.media_player.browse_media import (
+    BrowseMedia,
+    async_process_play_media_url,
+)
+from homeassistant.components.media_source import (
+    async_resolve_media,
+    is_media_source_id,
+)
 from homeassistant.components.template import DOMAIN, PLATFORMS
 from homeassistant.components.template.template_entity import TemplateEntity
 from homeassistant.const import ATTR_FRIENDLY_NAME, CONF_ENTITY_PICTURE_TEMPLATE
@@ -606,6 +613,13 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
         self, media_type: MediaType | str, media_id: str, **kwargs
     ):
         if CONF_PLAY_MEDIA_SCRIPT in self._service_scripts:
+            if is_media_source_id(media_id):
+                media_type = MediaType.MUSIC
+                play_item = await async_resolve_media(
+                    self.hass, media_id, self.entity_id
+                )
+                media_id = async_process_play_media_url(self.hass, play_item.url)
+
             await self._service_scripts[CONF_PLAY_MEDIA_SCRIPT].async_run(
                 {"media_type": media_type, "media_id": media_id}, context=self._context
             )
