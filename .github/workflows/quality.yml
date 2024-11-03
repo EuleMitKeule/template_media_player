@@ -2,110 +2,162 @@ name: Code Quality
 
 on:
   pull_request:
-      types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
-  black:
+  cache:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.13"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
+
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached Poetry venv
+        id: cached-poetry-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: poetry-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          pip install black
+        if: steps.cached-poetry-venv.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
 
-      - name: Run black
-        run: |
-          python -m black --check --diff custom_components/template_media_player
+      - name: Install package
+        run: poetry install --no-interaction
 
-  isort:
+  ruff:
+    needs: cache
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.13"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          pip install isort
-
-      - name: Run isort
-        run: |
-          python -m isort --check-only --diff --profile black custom_components/template_media_player
-
-  mypy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Python
-        uses: actions/setup-python@v4
+      - name: Load cached Poetry installation
+        uses: actions/cache@v4
         with:
-          python-version: "3.10"
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          pip install mypy
-
-      - name: Run mypy
-        run: |
-          python -m mypy custom_components/template_media_player --ignore-missing-imports
-
-  bandit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Python
-        uses: actions/setup-python@v4
+      - name: Load cached Poetry venv
+        uses: actions/cache@v4
         with:
-          python-version: "3.10"
+          path: ~/.venv
+          key: poetry-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install package
         run: |
-          pip install bandit
+          poetry install --no-interaction
 
-      - name: Run bandit
+      - name: Run ruff
         run: |
-          python -m bandit -r custom_components/template_media_player
+          poetry run ruff check custom_components/template_media_player
 
   hassfest:
+    needs: cache
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.13"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Load cached Poetry installation
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
+
+      - name: Load cached Poetry venv
+        uses: actions/cache@v4
+        with:
+          path: ~/.venv
+          key: poetry-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          poetry install --no-interaction
 
       - name: Run hassfest
         uses: home-assistant/actions/hassfest@master
 
   hacs:
+    needs: cache
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.13"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Load cached Poetry installation
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
+
+      - name: Load cached Poetry venv
+        uses: actions/cache@v4
+        with:
+          path: ~/.venv
+          key: poetry-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          poetry install --no-interaction
 
       - name: Run hacs
         uses: hacs/action@main
