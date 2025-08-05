@@ -5,15 +5,16 @@ media_player:
     media_players:
       fernseher:
         unique_id:
-        friendly_name:
+        name:
         device_class:
         base_media_player_entity_id:
         browse_media_entity_id:
-        global_template:
-        availability_template:
-        icon_template:
-        state_template:
-        attribute_templates:
+        search_media_entity_id:
+        variables:
+        availability:
+        icon:
+        state:
+        attributes:
           announce:
           app_id:
           app_name:

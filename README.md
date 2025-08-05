@@ -1,10 +1,17 @@
+# Template Media Player
+
+[![My Home Assistant](https://img.shields.io/badge/Home%20Assistant-%2341BDF5.svg?style=flat&logo=home-assistant&label=My)](https://my.home-assistant.io/redirect/hacs_repository/?owner=EuleMitKeule&repository=n8n-conversation&category=integration)
+
+![GitHub License](https://img.shields.io/github/license/eulemitkeule/n8n-conversation)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/eulemitkeule?logo=GitHub-Sponsors)
+
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Code Quality](https://github.com/EuleMitKeule/template_media_player/actions/workflows/quality.yml/badge.svg?branch=master)](https://github.com/EuleMitKeule/template_media_player/actions/workflows/quality.yml)
 
-# Template Media Player
-
-> Note: This integration is strongly inspired by [media_player.template](https://github.com/Sennevds/media_player.template).<br>
-> Unfortunately that integration is no longer maintained and missing some features, so I decided to create a new and improved one.
+> [!NOTE]
+> This integration is strongly inspired by [media_player.template](https://github.com/Sennevds/media_player.template).<br>
+> Unfortunately that integration is missing some features, so I decided to create a new and improved one.
 
 With Template Media Player you can create media player entities in Home Assistant using templates and scripts.<br>
 You can define any attribute you want and create custom behaviour for all services supported by the `media_player` domain.<br>
@@ -32,17 +39,17 @@ media_player:
         unique_id: my_media_player
         friendly_name: My Media Player
         device_class: tv
-        icon_template: mdi:television
-        state_template: "on"
+        icon: mdi:television
+        state: "on"
 ```
 
 ### Templates
 
-Options that are marked as `_template` or elements of the `attribute_templates` object can be defined using Jinja2 templates:
+All main options and all elements of the `attributes` object can be defined using Jinja2 templates:
 
 ```yaml
 # ...
-state_template: >
+state: >
   {% if states('media_player.something") == "on" %}
     idle
   {% else %}
@@ -52,7 +59,7 @@ state_template: >
 
 #### Attributes
 
-To define state attributes for your entity use the `attribute_templates` option.<br>
+To define state attributes for your entity use the `attributes` option.<br>
 You can use the variable `attribute` in your templates to get the current attributes name as a string.<br>
 For a full list of attributes commonly used by media player entities see [examples](examples/configuration.yaml).
 
@@ -62,16 +69,16 @@ media_player:
     media_players:
       my_media_player:
         #...
-        attribute_templates:
+        attributes:
             media_title: >
-              # attribute contains the value "media_title"
+              # `attribute` contains the value "media_title"
               {{ state_attr("media_player.something", attribute) }}
 ```
 
 #### Global Template
 
-To reduce code duplication you can define a template using the `global_template` option.
-This template will be executed before each of the other templates and can be used to define common variables.
+To reduce code duplication you can define a template using the `variables` option.
+This is a dictionary of variables that can be used in all templates of the media player entity.<br>
 
 ```yaml
 media_player:
@@ -79,9 +86,9 @@ media_player:
     media_players:
       my_media_player:
         #...
-        global_template: >
-          {% set tv = "media_player.tv" %}
-        state_template: >
+        variables:
+          tv: "media_player.tv"
+        state: >
           {{ states(tv) }}
 ```
 
@@ -166,7 +173,7 @@ media_player:
 
 You can specify an entity using the `base_media_player_entity_id` option to inherit all supported behaviour and attributes from, when the behaviour or attribute is not implemented by the template media player.
 
-### Browse Media
+### Browse And Search Media
 
-You can specify an entity to use for the browse media functionality using the `browse_media_entity_id` option.<br>
+You can specify an entity to use for the browse media and search media functionalities using the `browse_media_entity_id` and `search_media_entity_id` options.<br>
 Make sure you also define the `play_media` service for this to work.

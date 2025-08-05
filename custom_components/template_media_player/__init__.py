@@ -1,1 +1,1 @@
-"""template_media_player integration."""
+"""Template Media Player integration."""

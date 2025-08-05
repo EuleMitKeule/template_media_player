@@ -1,20 +1,31 @@
-[tool.poetry]
+[project]
 name = "template-media-player"
-version = "0.0.0"
+authors = [{ name = "Lennard Beers", email = "l.beers@outlook.de" }]
+maintainers = [{ name = "Lennard Beers", email = "l.beers@outlook.de" }]
+license = { file = "LICENSE.md" }
+keywords = [
+    "integration",
+    "custom-component",
+    "media-player",
+    "template",
+    "homeassistant",
+    "home-assistant-custom-component",
+    "home-assistant-integration",
+]
+classifiers = [
+    "Intended Audience :: Users",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+]
 description = ""
-authors = ["Lennard Beers <l.beers@outlook.de>"]
-license = "MIT"
 readme = "README.md"
-packages = [{include = "custom_components/template_media_player"}]
+requires-python = ">=3.13"
+version = "0.0.0"
+dependencies = []
 
-[tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-homeassistant = "^2024.10.4"
-
-
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.7.2"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[project.urls]
+Repository = "https://github.com/eulemitkeule/template-media-player"
+Documentation = "https://github.com/eulemitkeule/template-media-player/blob/master/README.md"
+Changelog = "https://github.com/EuleMitKeule/template-media-player/releases"
+Issues = "https://github.com/eulemitkeule/template-media-player/issues"
