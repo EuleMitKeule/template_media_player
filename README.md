@@ -5,10 +5,6 @@
 ![GitHub License](https://img.shields.io/github/license/eulemitkeule/n8n-conversation)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/eulemitkeule?logo=GitHub-Sponsors)
 
-
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![Code Quality](https://github.com/EuleMitKeule/template_media_player/actions/workflows/quality.yml/badge.svg?branch=master)](https://github.com/EuleMitKeule/template_media_player/actions/workflows/quality.yml)
-
 > [!NOTE]
 > This integration is strongly inspired by [media_player.template](https://github.com/Sennevds/media_player.template).<br>
 > Unfortunately that integration is missing some features, so I decided to create a new and improved one.
