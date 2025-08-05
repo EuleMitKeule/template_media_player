@@ -1,8 +1,8 @@
 # Template Media Player
 
-[![My Home Assistant](https://img.shields.io/badge/Home%20Assistant-%2341BDF5.svg?style=flat&logo=home-assistant&label=My)](https://my.home-assistant.io/redirect/hacs_repository/?owner=EuleMitKeule&repository=n8n-conversation&category=integration)
+[![My Home Assistant](https://img.shields.io/badge/Home%20Assistant-%2341BDF5.svg?style=flat&logo=home-assistant&label=My)](https://my.home-assistant.io/redirect/hacs_repository/?owner=EuleMitKeule&repository=template-media-player&category=integration)
 
-![GitHub License](https://img.shields.io/github/license/eulemitkeule/n8n-conversation)
+![GitHub License](https://img.shields.io/github/license/eulemitkeule/template-media-player)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/eulemitkeule?logo=GitHub-Sponsors)
 
 > [!NOTE]
@@ -71,7 +71,7 @@ media_player:
               {{ state_attr("media_player.something", attribute) }}
 ```
 
-#### Global Template
+#### Variables
 
 To reduce code duplication you can define a template using the `variables` option.
 This is a dictionary of variables that can be used in all templates of the media player entity.<br>
