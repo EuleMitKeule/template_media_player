@@ -33,7 +33,7 @@ media_player:
     media_players:
       my_media_player:
         unique_id: my_media_player
-        friendly_name: My Media Player
+        name: My Media Player
         device_class: tv
         icon: mdi:television
         state: "on"
