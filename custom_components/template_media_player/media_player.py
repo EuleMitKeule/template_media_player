@@ -39,10 +39,12 @@ from homeassistant.helpers.trigger_template_entity import CONF_UNIQUE_ID
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import (
+    CONF_ATTRIBUTES,
     CONF_BASE_MEDIA_PLAYER_ENTITY_ID,
     CONF_BROWSE_MEDIA_ENTITY_ID,
     CONF_CLEAR_PLAYLIST_SCRIPT,
     CONF_DEVICE_CLASS,
+    CONF_GLOBAL_TEMPLATE,
     CONF_JOIN_SCRIPT,
     CONF_MEDIA_NEXT_TRACK_SCRIPT,
     CONF_MEDIA_PAUSE_SCRIPT,
@@ -76,10 +78,12 @@ MEDIA_PLAYER_SCHEMA = (
     vol.Schema(
         {
             vol.Optional(CONF_DEVICE_CLASS): cv.string,
-            vol.Optional(CONF_STATE): cv.string,
+            vol.Optional(CONF_GLOBAL_TEMPLATE): cv.template,
+            vol.Optional(CONF_STATE): cv.template,
             vol.Optional(CONF_BASE_MEDIA_PLAYER_ENTITY_ID): cv.entity_id,
             vol.Optional(CONF_BROWSE_MEDIA_ENTITY_ID): cv.entity_id,
             vol.Optional(CONF_SEARCH_MEDIA_ENTITY_ID): cv.entity_id,
+            vol.Optional(CONF_ATTRIBUTES, default={}): {cv.string: cv.template},
             vol.Optional(CONF_SERVICE_SCRIPTS, default={}): {
                 cv.string: cv.SCRIPT_SCHEMA
             },
@@ -129,17 +133,24 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     ) -> None:
         """Initialize the Template Media player."""
         unique_id: str | None = config.get(CONF_UNIQUE_ID, name)
-
         TemplateEntity.__init__(self, hass, config, unique_id)
 
         self._attr_device_class = config.get(CONF_DEVICE_CLASS)
         self._attr_should_poll = False
 
-        self._base_media_player_entity_id = config.get(CONF_BASE_MEDIA_PLAYER_ENTITY_ID)
-        self._search_media_entity_id = config.get(CONF_SEARCH_MEDIA_ENTITY_ID)
-        self._browse_media_entity_id = config.get(CONF_BROWSE_MEDIA_ENTITY_ID)
-        self._state_template: Template | None = Template(config.get(CONF_STATE), hass)
-        self._state: MediaPlayerState | None = None
+        self._base_media_player_entity_id: str | None = config.get(
+            CONF_BASE_MEDIA_PLAYER_ENTITY_ID
+        )
+        self._search_media_entity_id: str | None = config.get(
+            CONF_SEARCH_MEDIA_ENTITY_ID
+        )
+        self._browse_media_entity_id: str | None = config.get(
+            CONF_BROWSE_MEDIA_ENTITY_ID
+        )
+        self._global_template: Template | None = config.get(CONF_GLOBAL_TEMPLATE)
+        self._state_template: Template | None = config.get(CONF_STATE)
+        self._attribute_templates: dict[str, Template] = config.get(CONF_ATTRIBUTES)
+
         self._service_scripts = {
             service: Script(hass, service_script, name, MEDIA_PLAYER_DOMAIN)
             for service, service_script in cast(
@@ -158,6 +169,24 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
                 dict[str, Sequence[dict[str, Any]]], config.get(CONF_SOUND_MODE_SCRIPTS)
             ).items()
         }
+
+        self._state: MediaPlayerState | None = None
+
+        for template in [
+            self._state_template,
+            self._availability_template,
+            self._icon_template,
+            self._friendly_name_template,
+            self._entity_picture_template,
+        ] + (
+            list(self._attribute_templates.values())
+            if self._attribute_templates
+            else []
+        ):
+            if template is None or not isinstance(template, Template):
+                continue
+
+            template.template = self._global_template.template + template.template
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
@@ -221,6 +250,9 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
         none_on_template_error: bool = False,
     ) -> None:
         """Create a template tracker for the attribute."""
+        if not template:
+            return
+
         template = Template(
             "{% set attribute = '" + attribute + "' %}" + template.template, self.hass
         )
@@ -246,7 +278,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     @property
     def supported_features(self) -> MediaPlayerEntityFeature:
         """Flag media player features that are supported."""
-        support = 0
+        support = MediaPlayerEntityFeature(0)
 
         if self._base_media_player_entity:
             support |= self._base_media_player_entity.supported_features

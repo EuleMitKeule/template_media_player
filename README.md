@@ -71,10 +71,32 @@ media_player:
               {{ state_attr("media_player.something", attribute) }}
 ```
 
+#### Global Template
+
+To define common template code that should be executed before every template, you can use the `global_template` option.
+This template will be prepended to all other templates and recalculated each time the entity is updated.<br>
+
+```yaml
+media_player:
+  - platform: template_media_player
+    media_players:
+      my_media_player:
+        #...
+        global_template: >
+          {% set tv = "media_player.tv" %}
+          {% set soundbar = "media_player.soundbar" %}
+        state: >
+          {{ states(tv) }}
+        attributes:
+          volume_level: >
+            {{ state_attr(soundbar, "volume_level") }}
+```
+
 #### Variables
 
-To reduce code duplication you can define a template using the `variables` option.
-This is a dictionary of variables that can be used in all templates of the media player entity.<br>
+To reduce code duplication you can also define variables using the `variables` option.
+This is a dictionary of variables that are calculated once on startup and can be used in all templates of the media player entity.
+Unlike `global_template`, variables are only calculated once when the entity is initialized.<br>
 
 ```yaml
 media_player:
