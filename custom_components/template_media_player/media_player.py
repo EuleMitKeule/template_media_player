@@ -555,14 +555,21 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
                 )
                 media_id = async_process_play_media_url(self.hass, play_item.url)
 
-            await self._service_scripts[CONF_PLAY_MEDIA_SCRIPT].async_run(
+            return await self._service_scripts[CONF_PLAY_MEDIA_SCRIPT].async_run(
                 {"media_type": media_type, "media_id": media_id}, context=self._context
             )
 
-        if self._base_media_player_entity:
-            await self._base_media_player_entity.async_play_media(
+        if self._browse_media_entity:
+            return await self._browse_media_entity.async_play_media(
                 media_type, media_id, **kwargs
             )
+
+        if self._base_media_player_entity:
+            return await self._base_media_player_entity.async_play_media(
+                media_type, media_id, **kwargs
+            )
+
+        return None
 
     async def async_select_sound_mode(self, sound_mode) -> None:
         """Select sound mode."""
