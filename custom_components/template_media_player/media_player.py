@@ -299,7 +299,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             support |= MediaPlayerEntityFeature.TURN_ON
         if CONF_TURN_OFF_SCRIPT in self._service_scripts:
             support |= MediaPlayerEntityFeature.TURN_OFF
-        if CONF_PLAY_MEDIA_SCRIPT in self._service_scripts:
+        if CONF_PLAY_MEDIA_SCRIPT in self._service_scripts or self._browse_media_entity:
             support |= MediaPlayerEntityFeature.PLAY_MEDIA
         if (
             CONF_VOLUME_UP_SCRIPT in self._service_scripts
