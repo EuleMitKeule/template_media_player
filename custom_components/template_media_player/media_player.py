@@ -642,7 +642,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             return None
 
         if self._sound_mode_scripts:
-            return await self.async_run_script(self._service_scripts[CONF_SELECT_SOUND_MODE_SCRIPT])
+            return await self.async_run_script(self._sound_mode_scripts[sound_mode])
 
         if self._base_media_player_entity:
             await self._base_media_player_entity.async_select_sound_mode(sound_mode)
@@ -653,7 +653,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             return
 
         if self._source_scripts:
-            return await self.async_run_script(self._service_scripts[CONF_SELECT_SOURCE_SCRIPT])
+            return await self.async_run_script(self._source_scripts[source])
 
         if self._base_media_player_entity:
             await self._base_media_player_entity.async_select_source(source)
