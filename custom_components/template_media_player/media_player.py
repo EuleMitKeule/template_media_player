@@ -357,7 +357,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             support |= MediaPlayerEntityFeature.PLAY
         if CONF_SHUFFLE_SET_SCRIPT in self._service_scripts:
             support |= MediaPlayerEntityFeature.SHUFFLE_SET
-        if len(self.sound_mode_list) > 0:
+        if len(self.sound_mode_list or []) > 0:
             support |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
         if self._browse_media_entity_id:
             support |= MediaPlayerEntityFeature.BROWSE_MEDIA
