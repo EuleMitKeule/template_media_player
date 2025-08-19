@@ -1,6 +1,6 @@
 """Template Media Player Component for Home Assistant."""
 
-from collections.abc import Callable, Sequence, Any
+from collections.abc import Callable, Sequence
 import logging
 from typing import Any, cast
 
@@ -34,7 +34,7 @@ from homeassistant.exceptions import HomeAssistantError, TemplateError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.script import Script, Template
+from homeassistant.helpers.script import Script, ScriptRunResult, Template
 from homeassistant.helpers.trigger_template_entity import CONF_UNIQUE_ID
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
@@ -86,9 +86,7 @@ MEDIA_PLAYER_SCHEMA = (
             vol.Optional(CONF_BROWSE_MEDIA_ENTITY_ID): cv.entity_id,
             vol.Optional(CONF_SEARCH_MEDIA_ENTITY_ID): cv.entity_id,
             vol.Optional(CONF_ATTRIBUTES, default={}): {cv.string: cv.template},
-            vol.Optional(CONF_SERVICE_SCRIPTS, default={}): {
-                cv.string: cv.SCRIPT_SCHEMA
-            },
+            vol.Optional(CONF_SERVICE_SCRIPTS, default={}): cv.schema_with_slug_keys(cv.SCRIPT_SCHEMA),
             vol.Optional(CONF_SOUND_MODE_SCRIPTS, default={}): {
                 cv.string: cv.SCRIPT_SCHEMA
             },
@@ -126,29 +124,29 @@ async def async_setup_platform(
 
 def build_browse_media(
     item: dict[str, Any],
-): BrowseMedia:
+) -> BrowseMedia:
     return BrowseMedia(
-        media_class: item["media_class"],
-        media_content_id: item["media_content_id"],
-        media_content_type: item["media_content_type"],
-        title: item["title"],
-        can_play: item["can_play"],
-        can_expand: item["can_expand"],
-        children: [
+        media_class=item["media_class"],
+        media_content_id=item["media_content_id"],
+        media_content_type=item["media_content_type"],
+        title=item["title"],
+        can_play=item["can_play"],
+        can_expand=item["can_expand"],
+        children=[
             process_search_results(child)
             for child
             in item.get("children", [])
-        ]
-        children_media_class: item.get("children_media_class", None),
-        thumbnail: item.get("thumbnail", None),
-        not_shown: item.get("not_shown", 0),
-        can_search: item.get("can_search", False),
+        ],
+        children_media_class=item.get("children_media_class", None),
+        thumbnail=item.get("thumbnail", None),
+        not_shown=item.get("not_shown", 0),
+        can_search=item.get("can_search", False),
     )
 
 
 def process_search_results(
     results: list[dict[str, Any]],
-): Sequence[BrowseMedia]:
+) -> Sequence[BrowseMedia]:
     return [
         build_browse_media(item)
         for item
@@ -166,6 +164,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
         name: str,
     ) -> None:
         """Initialize the Template Media player."""
+        TemplateEntity.__init__(self, hass, config, config.get(CONF_UNIQUE_ID, None))
         unique_id: str | None = config.get(CONF_UNIQUE_ID, name)
         TemplateEntity.__init__(self, hass, config, unique_id)
 
@@ -221,6 +220,14 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
                 continue
 
             template.template = self._global_template.template + template.template
+
+    async def async_run_script(self, script: Script, variables: dict[str, Any] = {}) -> ScriptRunResult | None:
+        """Run a script with variables."""
+        script_vars = {
+            **self._render_script_variables(),
+            **variables,
+        }
+        return await script.async_run(script_vars, context=self._context) 
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
@@ -340,7 +347,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             and CONF_VOLUME_DOWN_SCRIPT in self._service_scripts
         ):
             support |= MediaPlayerEntityFeature.VOLUME_STEP
-        if len(self.source_list) > 0:
+        if len(self.source_list or []) > 0:
             support |= MediaPlayerEntityFeature.SELECT_SOURCE
         if CONF_MEDIA_STOP_SCRIPT in self._service_scripts:
             support |= MediaPlayerEntityFeature.STOP
@@ -410,9 +417,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_next_track(self) -> None:
         """Send next track command."""
         if CONF_MEDIA_NEXT_TRACK_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_NEXT_TRACK_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_NEXT_TRACK_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_next_track()
@@ -422,9 +427,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_pause(self) -> None:
         """Send pause command."""
         if CONF_MEDIA_PAUSE_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_PAUSE_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_PAUSE_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_pause()
@@ -434,9 +437,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_play(self) -> None:
         """Send play command."""
         if CONF_MEDIA_PLAY_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_PLAY_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_PLAY_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_play()
@@ -446,9 +447,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_play_pause(self) -> None:
         """Play or pause the media player."""
         if CONF_MEDIA_PLAY_PAUSE_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_PLAY_PAUSE_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_PLAY_PAUSE_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_play_pause()
@@ -458,9 +457,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_previous_track(self) -> None:
         """Send previous track command."""
         if CONF_MEDIA_PREVIOUS_TRACK_SCRIPT in self._service_scripts:
-            return await self._service_scripts[
-                CONF_MEDIA_PREVIOUS_TRACK_SCRIPT
-            ].async_run(context=self._context)
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_PREVIOUS_TRACK_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_previous_track()
@@ -470,8 +467,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_seek(self, position: float) -> None:
         """Send seek command."""
         if CONF_MEDIA_SEEK_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_SEEK_SCRIPT].async_run(
-                {"position": position}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_SEEK_SCRIPT],
+                {"position": position},
             )
 
         if self._base_media_player_entity:
@@ -482,9 +479,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_media_stop(self) -> None:
         """Send stop command."""
         if CONF_MEDIA_STOP_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_MEDIA_STOP_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_MEDIA_STOP_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_media_stop()
@@ -494,8 +489,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_set_repeat(self, repeat: RepeatMode) -> None:
         """Set repeat mode."""
         if CONF_REPEAT_SET_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_REPEAT_SET_SCRIPT].async_run(
-                {"repeat": repeat}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_REPEAT_SET_SCRIPT],
+                {"repeat": repeat},
             )
 
         if self._base_media_player_entity:
@@ -506,8 +501,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_set_shuffle(self, shuffle: bool) -> None:
         """Enable/disable shuffle mode."""
         if CONF_SHUFFLE_SET_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_SHUFFLE_SET_SCRIPT].async_run(
-                {"shuffle": shuffle}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_SHUFFLE_SET_SCRIPT],
+                {"shuffle": shuffle},
             )
 
         if self._base_media_player_entity:
@@ -518,9 +513,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_toggle(self) -> None:
         """Toggle the power on the media player."""
         if CONF_TOGGLE_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_TOGGLE_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_TOGGLE_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_toggle()
@@ -530,9 +523,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_turn_off(self) -> None:
         """Turn the media player off."""
         if CONF_TURN_OFF_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_TURN_OFF_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_TURN_OFF_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_turn_off()
@@ -542,9 +533,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_turn_on(self) -> None:
         """Turn the media player on."""
         if CONF_TURN_ON_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_TURN_ON_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_TURN_ON_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_turn_on()
@@ -554,9 +543,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_volume_down(self) -> None:
         """Turn volume down for media player."""
         if CONF_VOLUME_DOWN_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_VOLUME_DOWN_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_VOLUME_DOWN_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_volume_down()
@@ -566,8 +553,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_mute_volume(self, mute: bool) -> None:
         """Mute the volume."""
         if CONF_VOLUME_MUTE_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_VOLUME_MUTE_SCRIPT].async_run(
-                {"mute": mute}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_VOLUME_MUTE_SCRIPT],
+                {"mute": mute},
             )
 
         if self._base_media_player_entity:
@@ -578,8 +565,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level, range 0..1."""
         if CONF_VOLUME_SET_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_VOLUME_SET_SCRIPT].async_run(
-                {"volume": volume}, context=self._context
+             return await self.async_run_script(self._service_scripts[CONF_VOLUME_SET_SCRIPT],
+                {"volume": volume},
             )
 
         if self._base_media_player_entity:
@@ -590,9 +577,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_volume_up(self) -> None:
         """Turn volume up for media player."""
         if CONF_VOLUME_UP_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_VOLUME_UP_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_VOLUME_UP_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_volume_up()
@@ -602,9 +587,7 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_clear_playlist(self) -> None:
         """Clear players playlist."""
         if CONF_CLEAR_PLAYLIST_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_CLEAR_PLAYLIST_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_CLEAR_PLAYLIST_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_clear_playlist()
@@ -614,8 +597,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     async def async_join_players(self, group_members: list[str]) -> None:
         """Join `group_members` as a player group with the current player."""
         if CONF_JOIN_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_JOIN_SCRIPT].async_run(
-                {"group_members": group_members}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_JOIN_SCRIPT],
+                {"group_members": group_members},
             )
 
         if self._base_media_player_entity:
@@ -637,8 +620,8 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
                 )
                 media_id = async_process_play_media_url(self.hass, play_item.url)
 
-            return await self._service_scripts[CONF_PLAY_MEDIA_SCRIPT].async_run(
-                {"media_type": media_type, "media_id": media_id}, context=self._context
+            return await self.async_run_script(self._service_scripts[CONF_PLAY_MEDIA_SCRIPT],
+                {"media_type": media_type, "media_id": media_id},
             )
 
         if self._browse_media_entity:
@@ -659,36 +642,26 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
             return None
 
         if self._sound_mode_scripts:
-            return await self._sound_mode_scripts[sound_mode].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_SELECT_SOUND_MODE_SCRIPT])
 
         if self._base_media_player_entity:
-            return await self._base_media_player_entity.async_select_sound_mode(
-                sound_mode
-            )
-
-        return None
+            await self._base_media_player_entity.async_select_sound_mode(sound_mode)
 
     async def async_select_source(self, source) -> None:
         """Select input source."""
         if source not in self.source_list:
-            return None
+            return
 
         if self._source_scripts:
-            return await self._source_scripts[source].async_run(context=self._context)
+            return await self.async_run_script(self._service_scripts[CONF_SELECT_SOURCE_SCRIPT])
 
         if self._base_media_player_entity:
-            return await self._base_media_player_entity.async_select_source(source)
-
-        return None
+            await self._base_media_player_entity.async_select_source(source)
 
     async def async_unjoin_player(self) -> None:
         """Remove this player from any group."""
         if CONF_UNJOIN_SCRIPT in self._service_scripts:
-            return await self._service_scripts[CONF_UNJOIN_SCRIPT].async_run(
-                context=self._context
-            )
+            return await self.async_run_script(self._service_scripts[CONF_UNJOIN_SCRIPT])
 
         if self._base_media_player_entity:
             return await self._base_media_player_entity.async_unjoin_player()
@@ -707,12 +680,11 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
         """
         if CONF_BROWSE_MEDIA_SCRIPT in self._service_scripts:
             return build_browse_media(
-                await self._service_scripts[CONF_BROWSE_MEDIA_SCRIPT].async_run(
+                await self.async_run_script(self._service_scripts[CONF_BROWSE_MEDIA_SCRIPT],
                     {
                         "media_conten_type": query.media_type,
                         "media_content_id": query.media_id,
                     },
-                    context=self._context
                 )
             )
         if self._browse_media_entity:
@@ -735,17 +707,19 @@ class TemplateMediaPlayer(TemplateEntity, MediaPlayerEntity):
     ) -> SearchMedia:
         """Search the media player."""
         if CONF_SEARCH_MEDIA_SCRIPT in self._service_scripts:
+            results = await self.async_run_script(self._service_scripts[CONF_SEARCH_MEDIA_SCRIPT],
+                {
+                    "media_content_type": query.media_content_type,
+                    "media_content_id": query.media_content_id,
+                    "search_query": query.search_query,
+                    "media_filter_classes": query.media_filter_classes
+                }
+            )
             return SearchMedia(
                 result=[
                     BrowseMedia(**item)
                     for item
-                    in await self._service_scripts[CONF_SEARCH_MEDIA_SCRIPT].async_run(
-                        {
-                            "media_content_type": query.media_type,
-                            "media_content_id": query.media_id,
-                            "search_query": query.search_query,
-                            "media_filter_classes": media_filter_classes
-                        }
+                    in results.media_response.get("media", [])
                 ],
                 context=self._context
             )
