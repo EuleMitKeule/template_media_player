@@ -76,10 +76,10 @@ _LOGGER = logging.getLogger(__name__)
 
 MEDIA_PLAYER_SCHEMA = vol.Schema(
     {
-        vol.Optional(CONF_NAME): cv.string,
+        vol.Optional(CONF_NAME): cv.template,
         vol.Optional(CONF_UNIQUE_ID): cv.string,
-        vol.Optional(CONF_ICON): cv.string,
-        vol.Optional(CONF_PICTURE): cv.string,
+        vol.Optional(CONF_ICON): cv.template,
+        vol.Optional(CONF_PICTURE): cv.template,
         vol.Optional(CONF_VARIABLES): cv.SCRIPT_VARIABLES_SCHEMA,
         vol.Optional(CONF_ATTRIBUTES): vol.Schema({cv.string: cv.template}),
         vol.Optional(CONF_DEVICE_CLASS): cv.string,
