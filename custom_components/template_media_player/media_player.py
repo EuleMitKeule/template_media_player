@@ -24,10 +24,6 @@ from homeassistant.components.media_source import (
     async_resolve_media,
     is_media_source_id,
 )
-from homeassistant.components.template.schemas import (
-    TEMPLATE_ENTITY_ATTRIBUTES_SCHEMA,
-    TEMPLATE_ENTITY_COMMON_CONFIG_ENTRY_SCHEMA,
-)
 from homeassistant.components.template.template_entity import TemplateEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, TemplateError
@@ -35,7 +31,6 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.script import Script, Template
-from homeassistant.helpers.trigger_template_entity import CONF_UNIQUE_ID
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import (
@@ -45,6 +40,7 @@ from .const import (
     CONF_CLEAR_PLAYLIST_SCRIPT,
     CONF_DEVICE_CLASS,
     CONF_GLOBAL_TEMPLATE,
+    CONF_ICON,
     CONF_JOIN_SCRIPT,
     CONF_MEDIA_NEXT_TRACK_SCRIPT,
     CONF_MEDIA_PAUSE_SCRIPT,
@@ -54,6 +50,8 @@ from .const import (
     CONF_MEDIA_PREVIOUS_TRACK_SCRIPT,
     CONF_MEDIA_SEEK_SCRIPT,
     CONF_MEDIA_STOP_SCRIPT,
+    CONF_NAME,
+    CONF_PICTURE,
     CONF_PLAY_MEDIA_SCRIPT,
     CONF_REPEAT_SET_SCRIPT,
     CONF_SEARCH_MEDIA_ENTITY_ID,
@@ -65,7 +63,9 @@ from .const import (
     CONF_TOGGLE_SCRIPT,
     CONF_TURN_OFF_SCRIPT,
     CONF_TURN_ON_SCRIPT,
+    CONF_UNIQUE_ID,
     CONF_UNJOIN_SCRIPT,
+    CONF_VARIABLES,
     CONF_VOLUME_DOWN_SCRIPT,
     CONF_VOLUME_MUTE_SCRIPT,
     CONF_VOLUME_SET_SCRIPT,
@@ -74,29 +74,27 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-MEDIA_PLAYER_SCHEMA = (
-    vol.Schema(
-        {
-            vol.Optional(CONF_DEVICE_CLASS): cv.string,
-            vol.Optional(CONF_GLOBAL_TEMPLATE): cv.template,
-            vol.Optional(CONF_STATE): cv.template,
-            vol.Optional(CONF_BASE_MEDIA_PLAYER_ENTITY_ID): cv.entity_id,
-            vol.Optional(CONF_BROWSE_MEDIA_ENTITY_ID): cv.entity_id,
-            vol.Optional(CONF_SEARCH_MEDIA_ENTITY_ID): cv.entity_id,
-            vol.Optional(CONF_ATTRIBUTES, default={}): {cv.string: cv.template},
-            vol.Optional(CONF_SERVICE_SCRIPTS, default={}): {
-                cv.string: cv.SCRIPT_SCHEMA
-            },
-            vol.Optional(CONF_SOUND_MODE_SCRIPTS, default={}): {
-                cv.string: cv.SCRIPT_SCHEMA
-            },
-            vol.Optional(CONF_SOURCE_SCRIPTS, default={}): {
-                cv.string: cv.SCRIPT_SCHEMA
-            },
-        }
-    )
-    .extend(TEMPLATE_ENTITY_COMMON_CONFIG_ENTRY_SCHEMA.schema)
-    .extend(TEMPLATE_ENTITY_ATTRIBUTES_SCHEMA.schema)
+MEDIA_PLAYER_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_NAME): cv.string,
+        vol.Optional(CONF_UNIQUE_ID): cv.string,
+        vol.Optional(CONF_ICON): cv.string,
+        vol.Optional(CONF_PICTURE): cv.string,
+        vol.Optional(CONF_VARIABLES): cv.SCRIPT_VARIABLES_SCHEMA,
+        vol.Optional(CONF_ATTRIBUTES): vol.Schema({cv.string: cv.template}),
+        vol.Optional(CONF_DEVICE_CLASS): cv.string,
+        vol.Optional(CONF_GLOBAL_TEMPLATE): cv.template,
+        vol.Optional(CONF_STATE): cv.template,
+        vol.Optional(CONF_BASE_MEDIA_PLAYER_ENTITY_ID): cv.entity_id,
+        vol.Optional(CONF_BROWSE_MEDIA_ENTITY_ID): cv.entity_id,
+        vol.Optional(CONF_SEARCH_MEDIA_ENTITY_ID): cv.entity_id,
+        vol.Optional(CONF_ATTRIBUTES, default={}): {cv.string: cv.template},
+        vol.Optional(CONF_SERVICE_SCRIPTS, default={}): {cv.string: cv.SCRIPT_SCHEMA},
+        vol.Optional(CONF_SOUND_MODE_SCRIPTS, default={}): {
+            cv.string: cv.SCRIPT_SCHEMA
+        },
+        vol.Optional(CONF_SOURCE_SCRIPTS, default={}): {cv.string: cv.SCRIPT_SCHEMA},
+    }
 )
 
 PLATFORM_SCHEMA = MEDIA_PLAYER_PLATFORM_SCHEMA.extend(
